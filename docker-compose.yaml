@@ -2,28 +2,32 @@ version: '3'
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-    ports:
-     - "2181:2181"
-    container_name: zookeeper
     healthcheck:
       test: nc -z zookeeper 2181 || exit -1
       start_period: 15s
       interval: 5s
       timeout: 10s
       retries: 10
+    ports:
+     - 2181:2181
+    volumes:
+      - ./zookeeper/secrets:/etc/zookeeper/secrets
+      - ./zookeeper/data:/var/lib/zookeeper/data
+      - ./zookeeper/log:/var/lib/zookeeper/log
   
   broker01:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka
+    container_name: broker01
     depends_on:
       zookeeper:
         condition: service_healthy
-    container_name: broker01
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -40,23 +44,23 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
       CONFLUENT_METRICS_ENABLE: 'false'
-    volumes:
-      - ./config/kafka_init/run_workaround.sh:/tmp/run_workaround.sh
-    ports:
-      - 9092:9092
-    mem_limit: 512m
     healthcheck:
       test: nc -z broker01 9092 || exit -1
       start_period: 15s
       interval: 5s
       timeout: 10s
       retries: 10
+    mem_limit: 512m
+    ports:
+      - 9092:9092
+    volumes:
+      - ./kafka/run_workaround.sh:/tmp/run_workaround.sh
+      - ./kafka/secrets:/etc/kafka/secrets
+      - ./kafka/data:/var/lib/kafka/data
 
   kafka-ui:
+    image: provectuslabs/kafka-ui
     container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8080:8080
     depends_on:
       broker01:
         condition: service_healthy
@@ -64,53 +68,62 @@ services:
       KAFKA_CLUSTERS_0_NAME: vdt-kafka-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker01:9093
       KAFKA_CLUSTERS_0_METRICS_PORT: 9090
-    mem_limit: 512m
     healthcheck:
       test: nc -z kafka-ui 8080 || exit -1
       start_period: 15s
       interval: 5s
       timeout: 10s
       retries: 10
+    mem_limit: 512m
+    ports:
+      - 8282:8080
 
   nifi:
     image: apache/nifi:latest
-    restart: always
     container_name: nifi
-    ports:
-      - 8181:8181
     environment:
       - NIFI_WEB_HTTP_PORT=8181
+    ports:
+      - 8181:8181
+    restart: always
     volumes:
-      - nifi_conf:/opt/nifi/nifi-current/conf
+      - ./nifi/conf:/opt/nifi/nifi-current/conf
+      - ./nifi/logs:/opt/nifi/nifi-current/logs
+      - ./nifi/provenance_repository:/opt/nifi/nifi-current/provenance_repository
+      - ./nifi/state:/opt/nifi/nifi-current/state
+      - ./nifi/content_repository:/opt/nifi/nifi-current/content_repository
+      - ./nifi/database_repository:/opt/nifi/nifi-current/database_repository
+      - ./nifi/flowfile_repository:/opt/nifi/nifi-current/flowfile_repository
 
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
-    restart: always
     ports:
       - 9870:9870
       - 9000:9000
-    volumes:
-      - hadoop_namenode:/hadoop/dfs/name
-      - hadoop_home:/home
     environment:
       - CLUSTER_NAME=test
     env_file:
       - ./hadoop.env
+    restart: always
+    volumes:
+      - hadoop_home:/home
+      - hadoop_namenode:/hadoop/dfs/name
 
   datanode:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
-    restart: always
-    volumes:
-      - hadoop_datanode:/hadoop/dfs/data
     environment:
       SERVICE_PRECONDITION: "namenode:9870"
     env_file:
       - ./hadoop.env
+    restart: always
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
 
   spark-master:
-    image: bitnami/spark:latest
+    image: bitnami/spark
+    container_name: spark-master
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -122,10 +135,11 @@ services:
       - '8080:8080'
       
   spark-worker:
-    image: bitnami/spark:latest
+    image: bitnami/spark
+    container_name: spark-worker
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -135,7 +149,6 @@ services:
       - SPARK_USER=spark
   
 volumes:
-  nifi_conf:
   hadoop_home:
   hadoop_namenode:
   hadoop_datanode:
