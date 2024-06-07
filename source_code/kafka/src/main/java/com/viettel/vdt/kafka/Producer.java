@@ -28,6 +28,10 @@ public class Producer {
                 String[] fields = line.split(",");
 //                String key = fields[0];  // Assuming the key is in the first column
                 String key = "Hello";
+//                String data = "{ \"student_code\": " + Integer.parseInt(fields[0])
+//                        + ", \"activity\": \"" + fields[1]
+//                        + "\", \"numberOfFile\": " + Integer.parseInt(fields[2])
+//                        + ", \"timestamp\": \"" + fields[3] + "\" }";
                 ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, key, line);
 
                 // Send the record and handle the result with callback

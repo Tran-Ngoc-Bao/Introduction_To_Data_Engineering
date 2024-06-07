@@ -15,8 +15,8 @@ import java.util.Properties;
 
 public class VdtConsumer {
 
-	private static final String TOPIC_NAME = "orders";
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9094";
+	private static final String TOPIC_NAME = "vdt2024";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String GROUP_ID = "vdt-orders";
 
     public static void main(String[] args) {
