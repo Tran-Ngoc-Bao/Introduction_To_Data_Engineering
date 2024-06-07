@@ -16,11 +16,11 @@ services:
       timeout: 10s
       retries: 10
     ports:
-     - 2181:2181
+     - "2181:2181"
     volumes:
-      - ./zookeeper/secrets:/etc/zookeeper/secrets
-      - ./zookeeper/data:/var/lib/zookeeper/data
-      - ./zookeeper/log:/var/lib/zookeeper/log
+      - zookeeper_secrets:/etc/zookeeper/secrets
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
   
   broker01:
     image: confluentinc/cp-kafka
@@ -50,13 +50,13 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-    mem_limit: 512m
+    mem_limit: 1G
     ports:
       - 9092:9092
     volumes:
       - ./kafka/run_workaround.sh:/tmp/run_workaround.sh
-      - ./kafka/secrets:/etc/kafka/secrets
-      - ./kafka/data:/var/lib/kafka/data
+      - kafka_secrets:/etc/kafka/secrets
+      - kafka_data:/var/lib/kafka/data
 
   kafka-ui:
     image: provectuslabs/kafka-ui
@@ -74,12 +74,12 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-    mem_limit: 512m
+    mem_limit: 1G
     ports:
       - 8282:8080
 
   nifi:
-    image: apache/nifi:latest
+    image: apache/nifi
     container_name: nifi
     environment:
       - NIFI_WEB_HTTP_PORT=8181
@@ -104,7 +104,7 @@ services:
     environment:
       - CLUSTER_NAME=test
     env_file:
-      - ./hadoop.env
+      - ./hadoop/hadoop.env
     restart: always
     volumes:
       - hadoop_home:/home
@@ -116,7 +116,7 @@ services:
     environment:
       SERVICE_PRECONDITION: "namenode:9870"
     env_file:
-      - ./hadoop.env
+      - ./hadoop/hadoop.env
     restart: always
     volumes:
       - hadoop_datanode:/hadoop/dfs/data
@@ -149,6 +149,11 @@ services:
       - SPARK_USER=spark
   
 volumes:
+  zookeeper_secrets:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_secrets:
+  kafka_data:
   hadoop_home:
   hadoop_namenode:
   hadoop_datanode:
