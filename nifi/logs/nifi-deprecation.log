@@ -1,4 +1,4 @@
-2024-06-08 07:23:05,606 WARN [main] deprecation.org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_0 Added Deprecated Component ConsumeKafkaRecord_2_0[id=f2804b4c-018f-1000-4a33-2dd2890abf91] See alternatives [org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_6]
+2024-06-15 12:13:22,722 WARN [main] deprecation.org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_0 Added Deprecated Component ConsumeKafkaRecord_2_0[id=f2804b4c-018f-1000-4a33-2dd2890abf91] See alternatives [org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_6]
 org.apache.nifi.deprecation.log.DeprecationException: Reference Class [org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_0] ClassLoader [org.apache.nifi.nar.NarClassLoader[./work/nar/extensions/nifi-kafka-2-0-nar-1.26.0.nar-unpacked]]
 	at org.apache.nifi.deprecation.log.StandardDeprecationLogger.getExtendedArguments(StandardDeprecationLogger.java:63)
 	at org.apache.nifi.deprecation.log.StandardDeprecationLogger.warn(StandardDeprecationLogger.java:54)
